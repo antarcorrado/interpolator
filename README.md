@@ -2,6 +2,8 @@
 
 # INTERPOLATOR
 
+<p align="center"><b><a href="https://github.com/antarcorrado/interpolator/releases/latest/download/Interpolator.dmg">Download for Mac</a></b><br>macOS 13 or later · Apple Silicon and Intel</p>
+
 Rebuilds the frames a video is missing. Interpolator finds the places where a clip stutters, flickers or lacks motion blur, and repairs them on the Mac GPU: missing frames are reconstructed from their neighbours along the measured motion of the picture, by a deterministic algorithm. The same clip always gives the same result, and the quality of every rebuilt frame can be measured.
 
 It was made for AI-generated video, where a frame is duplicated or dropped about once per second, and it works just as well on real footage:

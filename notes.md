@@ -1,7 +1,0 @@
-- Automatic updates: the app checks for a new version every time it is opened, downloads it, installs it and reopens. *Check for Updates…* is in the app menu.
-- Distributed as a disk image: open it and drag Interpolator to Applications. If the app is opened from somewhere else it offers to move itself there.
-- First-launch setup no longer depends on what is on the Mac: no Homebrew and no system Python. Python, PyTorch, ffmpeg and uv are fixed versions, each checked against a SHA-256, and everything stays in `~/Library/Application Support/Interpolator`.
-- Apple Silicon: ffmpeg is downloaded as a ready-made build like on Intel (it used to require Homebrew).
-- When a new version needs different libraries, the setup runs again by itself. If it fails, the reason is shown in the window.
-- Help → *Copy Diagnostics*: Mac model, installed versions and the end of the log on the clipboard, to report a problem.
-- Agent skill: on first launch the app links its instructions and the `interpolator` command for AI agents into the skills folder of each agent it finds (Claude, Codex, Cursor, Gemini, OpenCode, `~/.agents`), and confirms it at the bottom of the drop box; also in Help → *Install Agent Skill…*. The command line now works on a Mac that only has the app.
