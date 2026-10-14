@@ -1,6 +1,8 @@
-# Interpolator
+<p align="center"><img src="docs/img/icon.png" width="128" alt="Interpolator icon"></p>
 
-Rebuilds the frames a video is missing. Interpolator finds the places where a clip stutters, flickers or lacks motion blur, and repairs them on the Mac GPU: missing frames are reconstructed from their neighbours along the measured motion of the picture, by a deterministic algorithm rather than a generative model. The same clip always gives the same result, and the quality is measured, not guessed.
+# INTERPOLATOR
+
+Rebuilds the frames a video is missing. Interpolator finds the places where a clip stutters, flickers or lacks motion blur, and repairs them on the Mac GPU: missing frames are reconstructed from their neighbours along the measured motion of the picture, by a deterministic algorithm. The same clip always gives the same result, and the quality of every rebuilt frame can be measured.
 
 It was made for AI-generated video, where a frame is duplicated or dropped about once per second, and it works just as well on real footage:
 
@@ -19,12 +21,14 @@ It is one engine with two ways in:
 
 Both come in the same download and always stay in step: updating the app updates the command and the skill.
 
+<p align="center"><img src="docs/img/app.png" width="360" alt="The Interpolator window"></p>
+
 ## How it works
 
-For the curious. Nothing here is a neural network: PyTorch is used only to run the arithmetic on the GPU, and no model is downloaded.
+For the curious. The whole method is classical image processing; PyTorch runs the arithmetic on the GPU.
 
 1. **Finding what is missing.** The difference between each frame and the next is measured across the clip. A duplicate is a step of almost zero; a missing frame is an isolated step about one and a half times longer than its neighbours. In AI video these form a chain with a period of about one second, so the pattern itself confirms each find, and a position suggested only by the pattern is kept only if the measured motion there really is longer.
-2. **Measuring the motion.** Blocks of the picture are matched between the two frames around the gap on a grid of nodes, in three passes from coarse to fine (a node every 60, then 20, then 8 pixels), with sub-pixel precision. Dense optical flow is deliberately not used: on flat areas such as sky or sea it invents motion.
+2. **Measuring the motion.** Blocks of the picture are matched between the two frames around the gap on a grid of nodes, in three passes from coarse to fine (a node every 60, then 20, then 8 pixels), with sub-pixel precision. Block matching is used in place of dense optical flow, which invents motion on flat areas such as sky or sea.
 3. **Checking every vector.** Each node gets three candidates: its own local estimate, the dominant motion of the area around it, and the camera motion of the whole frame. The one that best predicts the real next frame, tested on the pixels, wins. Then each vector is compared with the same node in the neighbouring frame pairs: a camera moves smoothly, so a wrong vector stands out in time and is replaced.
 4. **Building the frame.** The frame before and the frame after are each moved halfway along the verified motion and blended. The result sits exactly where the missing frame would have been.
 5. **Motion blur from the same field.** Up to 32 copies of each frame are spread along its motion, spaced closely enough to form a continuous trail, for the shutter angle you choose (180° is the cinema standard). Where the motion is uncertain, no trail is drawn.
@@ -67,7 +71,15 @@ The result is saved next to the original as `name_interpolator.mp4` (or `.mov` f
 
 ## Use it from an AI agent
 
-The first time it is opened from Applications, the app links its skill into the skills folder of every agent it finds on the Mac: Claude (`~/.claude/skills`, used by Claude Code and by the Code tab of the Claude desktop app), Codex, Cursor, Gemini, OpenCode and the shared `~/.agents/skills`. A line at the bottom of the drop box confirms it. You can repeat it any time from **Help → Install Agent Skill…**. Then just ask:
+The first time it is opened from Applications, the app links its skill into every agent skills folder that already exists on the Mac, and a line at the bottom of the drop box confirms it:
+
+| Folder | Read by |
+|---|---|
+| `~/.claude/skills` | Claude Code and the Code tab of the Claude desktop app (also Cursor and OpenCode) |
+| `~/.agents/skills` | the shared folder: Codex, Cursor, Gemini CLI, GitHub Copilot, OpenCode |
+| `~/.codex/skills`, `~/.cursor/skills`, `~/.gemini/skills`, `~/.copilot/skills`, `~/.config/opencode/skills` | each agent's own folder |
+
+Folders are never created: an agent you start using later is picked up with **Help → Install Agent Skill…**. Then just ask:
 
 > Check this clip with Interpolator and tell me what you find.
 
