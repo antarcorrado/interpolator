@@ -1,6 +1,6 @@
 <p align="center"><img src="docs/img/icon.png" width="128" alt="Interpolator icon"></p>
 
-# INTERPOLATOR
+<h1 align="center">INTERPOLATOR</h1>
 
 <p align="center"><b><a href="https://github.com/antarcorrado/interpolator/releases/latest/download/Interpolator.dmg">Download for Mac</a></b><br>macOS 13 or later · Apple Silicon and Intel</p>
 
