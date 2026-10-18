@@ -23,7 +23,7 @@ It is one engine with two ways in:
 
 Both come in the same download and always stay in step: updating the app updates the command and the skill.
 
-<p align="center"><img src="docs/img/app.png" width="360" alt="The Interpolator window"></p>
+<p align="center"><img src="docs/img/app.png" width="620" alt="The Interpolator window"></p>
 
 ## How it works
 
@@ -33,6 +33,7 @@ For the curious. The whole method is classical image processing; PyTorch runs th
 2. **Measuring the motion.** Blocks of the picture are matched between the two frames around the gap on a grid of nodes, in three passes from coarse to fine (a node every 60, then 20, then 8 pixels), with sub-pixel precision. Block matching is used in place of dense optical flow, which invents motion on flat areas such as sky or sea.
 3. **Checking every vector.** Each node gets three candidates: its own local estimate, the dominant motion of the area around it, and the camera motion of the whole frame. The one that best predicts the real next frame, tested on the pixels, wins. Then each vector is compared with the same node in the neighbouring frame pairs: a camera moves smoothly, so a wrong vector stands out in time and is replaced.
 4. **Building the frame.** The frame before and the frame after are each moved halfway along the verified motion and blended. The result sits exactly where the missing frame would have been.
+   A second engine can build the new frames instead: **RIFE**, a neural network (rife-ncnn-vulkan) that estimates motion pixel by pixel and reasons about what gets covered and uncovered. It handles hair and thin edges in front of a fast background, where block matching can double them; block matching stays better on repeating textures. The analysis rebuilds a few real frames both ways and suggests the engine that makes the smaller error, and the app pre-selects it.
 5. **Motion blur from the same field.** Up to 32 copies of each frame are spread along its motion, spaced closely enough to form a continuous trail, for the shutter angle you choose (180° is the cinema standard). Where the motion is uncertain, no trail is drawn.
 6. **Flicker.** The brightness of each frame is compared with its own smoothed curve over time and corrected by a small gain, capped at ±4 %: anything larger is treated as a real change of light and left alone.
 
@@ -57,7 +58,7 @@ The clip keeps its own frame rate (23.976 to 60 fps). Audio can be kept, re-sync
 
 1. Download **[Interpolator.dmg](https://github.com/antarcorrado/interpolator/releases/latest/download/Interpolator.dmg)**.
 2. Open it and drag Interpolator to Applications.
-3. Open Interpolator. The first time, it sets itself up: it downloads Python, PyTorch and ffmpeg (about 300 MB, a few minutes, internet needed). Nothing else to install.
+3. Open Interpolator. The first time, it sets itself up: it downloads Python, PyTorch, ffmpeg and RIFE (about 750 MB, a few minutes, internet needed). Nothing else to install.
 
 You need macOS 13 or later, on Apple Silicon or Intel.
 
@@ -114,6 +115,7 @@ Then:
 ```bash
 interpolator analyze clip.mp4                 # what is wrong with the clip, as one line of JSON
 interpolator process clip.mp4 fixed.mp4 --deflicker=1 --blur=0.5 --audio=sync
+interpolator process clip.mp4 fixed.mov --engine=rife   # new frames with RIFE (when analyze suggests it)
 interpolator check fixed.mp4                  # confirms the result is clean
 interpolator                                  # every command and option
 ```
@@ -122,7 +124,7 @@ Open the app once before using the command: the app is what installs the engine'
 
 ## Good to know
 
-- **What gets installed.** Everything lives in `~/Library/Application Support/Interpolator` (a private Python environment and ffmpeg). To remove Interpolator completely, delete that folder and the app.
+- **What gets installed.** Everything lives in `~/Library/Application Support/Interpolator` (a private Python environment, ffmpeg and RIFE). To remove Interpolator completely, delete that folder and the app.
 - **Privacy.** Your videos never leave your Mac. The app uses the network only for the first-time setup and to check for updates.
 - **Speed.** Processing runs on the GPU. Run one job at a time: two at once are slower than one after the other.
 - **Colour.** The engine works in Rec. 709. Other colour spaces (Rec. 2020, HDR) are detected and flagged before you start.
@@ -134,7 +136,7 @@ In the app, choose **Help → Copy Diagnostics** and paste the result into [a ne
 
 ## Third-party software
 
-On first launch Interpolator downloads, from their own publishers: [ffmpeg](https://ffmpeg.org) (GPL build, from evermeet.cx on Intel and martin-riedl.de on Apple Silicon), [PyTorch](https://pytorch.org), [NumPy](https://numpy.org), [Pillow](https://python-pillow.org), Python and [uv](https://docs.astral.sh/uv/). Updates are handled by [Sparkle](https://sparkle-project.org), included in the app. Each keeps its own licence.
+On first launch Interpolator downloads, from their own publishers: [ffmpeg](https://ffmpeg.org) (GPL build, from evermeet.cx on Intel and martin-riedl.de on Apple Silicon), [PyTorch](https://pytorch.org), [NumPy](https://numpy.org), [Pillow](https://python-pillow.org), Python and [uv](https://docs.astral.sh/uv/) and [rife-ncnn-vulkan](https://github.com/nihui/rife-ncnn-vulkan) (MIT, with the RIFE v4 and v4.6 models). Updates are handled by [Sparkle](https://sparkle-project.org), included in the app. Each keeps its own licence.
 
 ---
 
